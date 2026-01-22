@@ -1,0 +1,68 @@
+
+
+services:
+  # Relational Database (Users, Pets, Medical Records)
+  postgres:
+    image: postgres:15-alpine
+    container_name: petauthority_postgres
+    environment:
+      POSTGRES_USER: petadmin
+      POSTGRES_PASSWORD: petpassword
+      POSTGRES_DB: petauthority_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pet_network
+
+  # NoSQL Database (GPS Telemetry, Batch Data)
+  mongo:
+    image: mongo:6.0
+    container_name: petauthority_mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: petadmin
+      MONGO_INITDB_ROOT_PASSWORD: petpassword
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pet_network
+
+  # Message Broker (Real-time GPS Alerts)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: petauthority_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - pet_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: petauthority_kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - pet_network
+
+  # Optional warning: Kafka consumption might require more RAM.
+
+networks:
+  pet_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongo_data:

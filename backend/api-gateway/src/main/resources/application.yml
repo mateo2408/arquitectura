@@ -1,0 +1,56 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/auth/**
+        - id: pet-service
+          uri: lb://PET-SERVICE
+          predicates:
+            - Path=/pets/**, /medical/**
+        - id: tracking-service
+          uri: lb://TRACKING-SERVICE
+          predicates:
+            - Path=/tracking/**
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: false # For simple docker-compose setups without Eureka, we might fallback to direct URLs or use Docker DNS properties. 
+    # NOTE: Since no Eureka server was listed in the architecture or docker-compose, I will assume basic Gateway routing via URLs or internal Docker DNS if they were in the same network.
+    # HOWEVER, running LOCALLY (outside docker), we need to point to localhost ports.
+    # Updating URIs to point to localhost for local development convenience as requested.
+
+---
+# Profile for local development (running services via IDE/Maven wrapper)
+spring:
+  config:
+    activate:
+      on-profile: default
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth/**
+        - id: pet-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/pets/**, /medical/**
+        - id: tracking-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/tracking/**
