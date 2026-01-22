@@ -207,3 +207,4 @@ Los dispositivos GPS requieren conexión celular (2G/LTE-M) para transmitir ubic
 
 *Documento generado: Enero 2026*
 *Precios sujetos a variación según región y proveedores*
+
