@@ -4,11 +4,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/medical")
+@Tag(name = "Medical", description = "API para registros médicos y vacunas")
 public class MedicalController {
 
     @Autowired
@@ -18,12 +22,16 @@ public class MedicalController {
     private VaccineRepository vaccineRepository;
 
     @GetMapping("/records/{petId}")
-    public List<MedicalRecord> getRecords(@PathVariable Long petId) {
+    @Operation(summary = "Historial médico", description = "Obtiene todos los registros médicos de una mascota")
+    public List<MedicalRecord> getRecords(
+            @Parameter(description = "ID de la mascota") @PathVariable Long petId) {
         return medicalRecordRepository.findByPetId(petId);
     }
 
     @GetMapping("/vaccines/{petId}")
-    public List<Vaccine> getVaccines(@PathVariable Long petId) {
+    @Operation(summary = "Vacunas", description = "Obtiene todas las vacunas de una mascota")
+    public List<Vaccine> getVaccines(
+            @Parameter(description = "ID de la mascota") @PathVariable Long petId) {
         return vaccineRepository.findByPetId(petId);
     }
 }
